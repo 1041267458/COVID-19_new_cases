@@ -7,9 +7,8 @@ COVID-19 data used in this project are open access and avaliable at https://gith
 The following R packages are needed
 R packages:
 - shiny
-- maps
 - tidyverse
-- RcppRoll
-- [stat5730covid19](https://github.com/vqv/stat5730covid19)
-
+- ggrepel
+- patchwork
+- lubridate
 the published shiny app available at https://feng945.shinyapps.io/stat5730/
