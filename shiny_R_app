@@ -1,0 +1,53 @@
+library(shiny)
+library(tidyverse)
+library(ggrepel)
+library(patchwork)
+library(lubridate)
+
+ui <- fluidPage(
+  headerPanel("COD-19 cases in your county"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("targetstate", "your State",state.name),
+      dateInput("targetdate", "select the date")
+    ),
+    mainPanel(
+      plotOutput("casesplot")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  
+  
+  ## download the data
+  covid19_usa_url <- "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv"
+  covid19_usa <- read_csv(covid19_usa_url)
+  
+  covid19_states <- covid19_usa %>%
+    group_by(state, date) %>%
+    summarize(cases = sum(cases), deaths = sum(deaths))
+  
+  covid19_states <- covid19_states %>%
+    group_by(state) %>%
+    arrange(date) %>%
+    mutate(
+      new_cases = cases - lag(cases),
+      new_deaths = deaths - lag(deaths)
+    )
+  
+  target_state <- reactive ({
+    covid19_states %>%
+      filter(state == input$targetstate) %>%
+      filter(date >= (as.Date(as.character(input$targetdate))-6) & date <= as.Date(as.character(input$targetdate)))
+  })
+  
+  output$caseplot <- renderPlot({
+    
+    ggplot(data = target_state) +
+      geom_line(aes(date,new_cases))
+    
+  })
+}
+
+shinyApp(ui,server)
